@@ -1,0 +1,74 @@
+<!-- all_bills.html -->
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Your Bills</h1>
+    {% if bills %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Total Price</th>
+                <th>Discount</th>
+                <th>Final Price</th>
+                <th>Status</th>
+                <th>Payment Card</th>
+                <th>Details</th> <!-- Add this column -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ bill.created_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ bill.total_price }} ฿</td>
+                <td class="text-success">{{ bill.discount_amount }} ฿</td>
+                <td class="text-primary">{{ bill.discounted_total_price }} ฿</td>
+                <td>
+                    {% if bill.status == 'Waiting' %}
+                    <span class="badge bg-warning">{{ bill.status }}</span>
+                    {% elif bill.status == 'Paid' %}
+                    <span class="badge bg-success">{{ bill.status }}</span>
+                    {% elif bill.status == 'Cancelled' %}
+                    <span class="badge bg-danger">{{ bill.status }}</span>
+                    {% else %}
+                    {{ bill.status }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if bill.payment_method == 'credit_card' %}
+                    **** **** **** {{ bill.credit_card.card_number|stringformat:"s"|slice:"-4:" }}
+                    {% else %}
+                    {{ bill.payment_method }}
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'bill_detail' bill.id %}" class="btn btn-info btn-sm">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="mt-3">
+        <nav>
+            <ul class="pagination">
+                {% if bills.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ bills.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ bills.number }} of {{bills.paginator.num_pages }}</span></li>
+                {% if bills.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ bills.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No bills found.</strong> Make a payment to see your bills here.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
